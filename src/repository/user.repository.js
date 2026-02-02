@@ -12,3 +12,16 @@ export async function createUser({username, password}) {
     const {rows} = await pool.query(query, values);
     return rows[0];
 }
+
+export async function findUserByUsername(username) {
+    const query = `
+        SELECT id, username, password, avatar, created_at
+        FROM users
+        WHERE username = $1
+    `
+    
+    const values = [username];
+
+    const {rows} = await pool.query(query, values);
+    return rows[0]
+}
