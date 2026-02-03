@@ -21,7 +21,7 @@ export async function loginController(req, res) {
     try {
         const {username, password} = req.body;
 
-        const user = await loginUser({username, password})
+        const data = await loginUser({username, password});
 
         return res.status(200).json(user);
     } catch (err) {

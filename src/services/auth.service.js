@@ -1,4 +1,6 @@
 import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken";
+import { JWT_SECRET, JWT_EXPIRES_IN } from "../config/env.js";
 import { BYCRYPT_SALT_ROUNDS } from "../config/env.js";
 import { 
     createUser as createUserRepo,
@@ -49,7 +51,21 @@ export async function loginUser({username, password}) {
         throw new Error("Usuário ou senha inválidos");
     }
 
-    delete user.password;
+    const token = jwt.sign(
+        {
+            sub: user.id,
+            username: user.username
+        },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+    );
 
-    return user;
+    return {
+        token,
+        user: {
+            id: user.id,
+            username: user.username,
+            avatar: user.avatar
+        },
+    };
 }
