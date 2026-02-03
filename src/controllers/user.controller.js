@@ -1,4 +1,4 @@
-import { createUser, loginUser } from "../services/auth.service.js";
+import { createUser, getUserById, loginUser } from "../services/user.service.js";
 
 export async function createUserController(req, res) {
     try {
@@ -23,7 +23,7 @@ export async function loginController(req, res) {
 
         const data = await loginUser({username, password});
 
-        return res.status(200).json(user);
+        return res.status(200).json(data);
     } catch (err) {
         if (
             err.message === "Dados inválidos" ||
@@ -38,5 +38,15 @@ export async function loginController(req, res) {
         return res.status(500).json({
             message: "Erro ao fazer login",
         });
+    }
+}
+
+export async function getMeController(req, res) {
+    try {
+        const user = await getUserById(req.user.id);
+        return res.json(user);
+    } catch(err) {
+        console.error(err)
+        return res.status(404).json({message: "Usuário não encontrado"})
     }
 }
