@@ -23,5 +23,18 @@ export async function findUserByUsername(username) {
     const values = [username];
 
     const {rows} = await pool.query(query, values);
-    return rows[0]
+    return rows[0];
+}
+
+export async function findUserById(id) {
+    const query = `
+        SELECT id, username, avatar, created_at
+        FROM users
+        WHERE id = $1
+    `
+
+    const values = [id];
+
+    const {rows} = await pool.query(query, values);
+    return rows[0];
 }
