@@ -5,6 +5,7 @@ import { BYCRYPT_SALT_ROUNDS } from "../config/env.js";
 import { 
     createUser as createUserRepo,
     findUserByUsername as findUserByUsernameRepo,
+    findUserById as findUserByIdRepo,
 }  from "../repository/user.repository.js"
 
 export async function createUser({username, password}) {
@@ -67,5 +68,18 @@ export async function loginUser({username, password}) {
             username: user.username,
             avatar: user.avatar
         },
+    };
+}
+
+export async function getUserById(id) {
+    const user = await findUserByIdRepo(id);
+
+    if(!user) throw new Error("Usuário não encontrado");
+
+    return {
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar,
+        created_at: user.created_at
     };
 }
