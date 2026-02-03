@@ -1,5 +1,5 @@
-import { jwt } from "jsonwebtoken";
-import { JWT_SECRET } from "../config/env";
+import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../config/env.js";
 
 export function authMiddleware(req, res, next) {
     const authHeader = req.headers.authorization
