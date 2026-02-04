@@ -10,14 +10,14 @@ export async function getChatMessages(chatId) {
     const values = [chatId];
 
     const {rows} = await pool.query(query, values);
-    return rows[0];
+    return rows;
 }
 
 export async function sendMessage(content, chatId, userId) {
     const query = `
         INSERT INTO messages (content, chat_id, user_id)
         VALUES($1, $2, $3)
-        RETURNING content, sent_at
+        RETURNING content, sent_at, chat_id, user_id
     `;
 
     const values = [content, chatId, userId];
