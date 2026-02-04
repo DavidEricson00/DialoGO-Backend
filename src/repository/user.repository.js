@@ -38,3 +38,34 @@ export async function findUserById(id) {
     const {rows} = await pool.query(query, values);
     return rows[0];
 }
+
+export async function upadteUser(username=null, avatar=null, password=null, id) {
+    const query = `
+        UPDATE users
+        SET
+            username = COALESCE($1, username),
+            avatar = COALESCE($2, avatar),
+            password = COALESCE($3, password)
+        WHERE id = $4
+    `;
+
+    const values = [username, avatar, password, id]
+
+    const {rows} = await pool.query(query, values);
+    return rows[0];
+}
+
+
+export async function getUserChats(userId) {
+    const query = `
+        SELECT c.id, c.name, c.description, c.created_at
+        FROM chats c
+        INNER JOIN users_chats uc ON uc.chat_id = c,id
+        WHERE uc.user_id = $1
+    `
+
+    const values = [userId];
+
+    const {rows} = await pool.query(query, values);
+    return rows[0];
+}
