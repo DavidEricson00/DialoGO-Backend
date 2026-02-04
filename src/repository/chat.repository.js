@@ -7,7 +7,7 @@ export async function getChats() {
     `
 
     const {rows} = await pool.query(query, values);
-    return rows[0];
+    return rows;
 }
 
 export async function createChat({name, description, password=null}) {
@@ -91,4 +91,18 @@ export async function leaveChat(userId, chatId) {
 
     const {rows} = await pool.query(query, values);
     return rows[0];
+}
+
+export async function userBelongsToChat(userId, chatId) {
+    const query = `
+        SELECT 1
+        FROM users_chats
+        WHERE user_id = $1 AND chat_id = $2
+    `;
+
+    const values = [userId, chatId];
+
+    const { rowCount } = await pool.query(query, values);
+
+    return rowCount > 1
 }
