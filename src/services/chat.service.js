@@ -1,149 +1,103 @@
-import { 
-    createChat as createChatRepo, 
-    getChats as getChatsRepo,
-    updateChat as updateChatRepo,
-    getChatById as getChatByIdRepo,
-    deleteChat as deleteChatRepo,
-    joinChat as joinChatRepo,
-    leaveChat as leaveChatRepo,
-    userBelongsToChat,
-    userIsChatOwner
-} from "../repository/chat.repository";
+import {
+  createChat as createChatRepo,
+  getChats as getChatsRepo,
+  updateChat as updateChatRepo,
+  getChatById as getChatByIdRepo,
+  deleteChat as deleteChatRepo,
+  joinChat as joinChatRepo,
+  leaveChat as leaveChatRepo,
+  userBelongsToChat,
+  userIsChatOwner
+} from "../repository/chat.repository.js";
 
-export async function createChat({name, description=null, password=null, ownerId}) {
-    if(!name) {
-        throw new Error("Dados inválidos");
-    }
+function error(message, statusCode) {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  return err;
+}
 
-    const chat =  await createChatRepo({
-        name,
-        description,
-        password,
-        ownerId
-    })
+export async function createChat({ name, description = null, password = null, ownerId }) {
+  if (!name || !ownerId) throw error("Dados inválidos", 400);
 
-    await joinChatRepo(ownerId, chat.id);
+  const chat = await createChatRepo({ name, description, password, ownerId });
+  await joinChatRepo(ownerId, chat.id);
 
-    return {
-        id: chat.id,
-        name: chat.name,
-        description: chat.description,
-        created_at: chat.created_at,
-        ownerId: chat.ownerId
-    }
+  return {
+    id: chat.id,
+    name: chat.name,
+    description: chat.description,
+    created_at: chat.created_at,
+    ownerId: chat.owner_id
+  };
 }
 
 export async function getChats() {
-    const chats = await getChatsRepo()
-
-    if(!chats) throw new Error("Chat não encontrados");
-
-    return chats.map(chat => ({
-        id: chat.id,
-        name: chat.name,
-        description: chat.description,
-        created_at: chat.created_at
-    }))
+  const chats = await getChatsRepo();
+  return chats.map(chat => ({
+    id: chat.id,
+    name: chat.name,
+    description: chat.description,
+    created_at: chat.created_at
+  }));
 }
 
 export async function getChatById(id) {
-    if (!id) {
-        throw new Error("Id inválido")
-    }
+  if (!id) throw error("Id inválido", 400);
 
-    const chat = await getChatByIdRepo(id)
+  const chat = await getChatByIdRepo(id);
+  if (!chat) throw error("Chat não encontrado", 404);
 
-    if(!chat) throw new Error("Chat não encontrados");
-
-    return {
-        id: chat.id,
-        name: chat.name,
-        description: chat.description,
-        created_at: chat.created_at
-    }
+  return {
+    id: chat.id,
+    name: chat.name,
+    description: chat.description,
+    created_at: chat.created_at
+  };
 }
 
-export async function updateChat({name=null, description=null, password=null, chatId, ownerId}) {
-    if(!chatId || !ownerId) {
-        throw new Error("Id inválido");
-    }
+export async function updateChat({ name = null, description = null, password = null, chatId, ownerId }) {
+  if (!chatId || !ownerId) throw error("Dados inválidos", 400);
 
-    const isOwner = await userIsChatOwner(ownerId,chatId);
+  const isOwner = await userIsChatOwner(ownerId, chatId);
+  if (!isOwner) throw error("Usuário não é o dono do chat", 403);
 
-    if (!isOwner) {
-        const err = new Error("Usuário não é o dono do chat");
-        err.statusCode = 403;
-        throw err;
-    }
+  const chatUpdated = await updateChatRepo({ name, description, password, chatId });
+  if (!chatUpdated) throw error("Chat não encontrado", 404);
 
-    const chatUpdated =  await updateChatRepo({
-        name,
-        description,
-        password,
-        chatId
-    })
-
-    return {
-        id: chat.id,
-        name: chatUpdated.name,
-        description: chatUpdated.description,
-        created_at: chatUpdated.created_at
-    }
+  return {
+    id: chatUpdated.id,
+    name: chatUpdated.name,
+    description: chatUpdated.description,
+    created_at: chatUpdated.created_at
+  };
 }
 
 export async function deleteChat(chatId, ownerId) {
-    if(!chatId || !ownerId) {
-        throw new Error("Id inválido");
-    }
+  if (!chatId || !ownerId) throw error("Dados inválidos", 400);
 
-    const isOwner = await userIsChatOwner(ownerId,chatId);
+  const isOwner = await userIsChatOwner(ownerId, chatId);
+  if (!isOwner) throw error("Usuário não é o dono do chat", 403);
 
-    if (!isOwner) {
-        const err = new Error("Usuário não é o dono do chat");
-        err.statusCode = 403;
-        throw err;
-    }
-    
-    await deleteChatRepo(chatId)
+  await deleteChatRepo(chatId);
 }
 
 export async function joinChat(chatId, userId) {
-    if(!chatId || !userId) {
-        throw new Error("Id inválido");
-    }
+  if (!chatId || !userId) throw error("Dados inválidos", 400);
 
-    const isMember = await userBelongsToChat(userId,chatId);
+  const isMember = await userBelongsToChat(userId, chatId);
+  if (isMember) throw error("Usuário já participa do chat", 409);
 
-    if (isMember) {
-        const err = new Error("Usuário já participa do chat");
-        err.statusCode = 403;
-        throw err;
-    }
-
-    await joinChatRepo(userId, chatId)
+  await joinChatRepo(userId, chatId);
 }
 
-
 export async function leaveChat(chatId, userId) {
-    if(!chatId || !userId) {
-        throw new Error("Id inválido");
-    }
+  if (!chatId || !userId) throw error("Dados inválidos", 400);
 
-    const isMember = await userBelongsToChat(userId,chatId);
+  const isMember = await userBelongsToChat(userId, chatId);
+  if (!isMember) throw error("Usuário não participa do chat", 409);
 
-    if (!isMember) {
-        const err = new Error("Usuário não participa do chat");
-        err.statusCode = 403;
-        throw err;
-    }
+  const isOwner = await userIsChatOwner(userId, chatId);
+  if (isOwner) throw error("Dono não pode sair do chat", 403);
 
-    const isOwner = await userIsChatOwner(userId,chatId);
-
-    if (isOwner) {
-        const err = new Error("Usuário é o dono do chat");
-        err.statusCode = 403;
-        throw err;
-    }
-
-    await leaveChatRepo(userId, chatId)
+  await leaveChatRepo(userId, chatId);
 }
