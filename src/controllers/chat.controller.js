@@ -65,7 +65,7 @@ export async function updateChatController(req, res) {
 
 export async function deleteChatController(req, res) {
   try {
-    const { chatId } = req.body;
+    const { chatId } = req.params;
     await deleteChat(chatId, req.user.id);
     return res.sendStatus(204);
   } catch (err) {
