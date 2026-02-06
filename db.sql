@@ -30,6 +30,7 @@ CREATE TABLE chats (
     name VARCHAR(100) NOT NULL UNIQUE,
     password TEXT,
     description TEXT,
+    owner_id UUID NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
