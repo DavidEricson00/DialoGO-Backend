@@ -2,7 +2,7 @@ import pool from "../db.js";
 
 export async function getChats() {
     const query = `
-        SELECT id, name, description, created_at
+        SELECT id, name, description, created_at, owner_id
         FROM chats
     `
 
@@ -10,14 +10,14 @@ export async function getChats() {
     return rows;
 }
 
-export async function createChat({name, description, password=null}) {
+export async function createChat(name, description=null, password=null, ownerId) {
     const query = `
-        INSERT INTO chat (name, description, password)
-        VALUES($1, $2)
-        RETURNING id, name, description, created_at
+        INSERT INTO chats (name, description, password, owner_id)
+        VALUES($1, $2, $3, $4)
+        RETURNING id, name, description, created_at, owner_id
     `;
 
-    const values = [name, description, password];
+    const values = [name, description, password, ownerId];
 
     const {rows} = await pool.query(query, values);
     return rows[0];
@@ -25,10 +25,9 @@ export async function createChat({name, description, password=null}) {
 
 export async function getChatById(id) {
     const query = `
-        SELECT id, name, description, created_at
+        SELECT id, name, description, created_at, owner_id
         FROM chats
         WHERE id = $1
-        RETURNING id, name, description, created_at
     `
 
     const values = [id];
@@ -45,7 +44,7 @@ export async function updateChat(name = null, description = null, password = nul
             description = COALESCE($2, description),
             password = COALESCE($3, password)
         WHERE id = $4
-        RETURNING id, name, description, created_at
+        RETURNING id, name, description, created_at, owner_id
     `;
 
     const values = [name, description, password, id]
@@ -104,5 +103,16 @@ export async function userBelongsToChat(userId, chatId) {
 
     const { rowCount } = await pool.query(query, values);
 
-    return rowCount > 1
+    return rowCount > 0
+}
+
+export async function userIsChatOwner(userId, chatId) {
+  const query = `
+    SELECT 1
+    FROM chats
+    WHERE id = $1 AND owner_id = $2
+  `;
+
+  const { rowCount } = await pool.query(query, [chatId, userId]);
+  return rowCount > 0;
 }
