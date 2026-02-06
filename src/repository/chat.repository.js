@@ -6,11 +6,11 @@ export async function getChats() {
         FROM chats
     `
 
-    const {rows} = await pool.query(query, values);
+    const {rows} = await pool.query(query);
     return rows;
 }
 
-export async function createChat(name, description=null, password=null, ownerId) {
+export async function createChat({name, description=null, password=null, ownerId}) {
     const query = `
         INSERT INTO chats (name, description, password, owner_id)
         VALUES($1, $2, $3, $4)
@@ -36,7 +36,7 @@ export async function getChatById(id) {
     return rows[0];
 }
 
-export async function updateChat(name = null, description = null, password = null, id) {
+export async function updateChat({name = null, description = null, password = null, chatId}) {
     const query = `
         UPDATE chats
         SET
@@ -47,7 +47,7 @@ export async function updateChat(name = null, description = null, password = nul
         RETURNING id, name, description, created_at, owner_id
     `;
 
-    const values = [name, description, password, id]
+    const values = [name, description, password, chatId]
 
     const {rows} = await pool.query(query, values);
     return rows[0];

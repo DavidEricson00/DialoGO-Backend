@@ -25,6 +25,7 @@ export async function createChat({name, description=null, password=null, ownerId
     await joinChatRepo(ownerId, chat.id);
 
     return {
+        id: chat.id,
         name: chat.name,
         description: chat.description,
         created_at: chat.created_at,
@@ -38,6 +39,7 @@ export async function getChats() {
     if(!chats) throw new Error("Chat não encontrados");
 
     return chats.map(chat => ({
+        id: chat.id,
         name: chat.name,
         description: chat.description,
         created_at: chat.created_at
@@ -54,6 +56,7 @@ export async function getChatById(id) {
     if(!chat) throw new Error("Chat não encontrados");
 
     return {
+        id: chat.id,
         name: chat.name,
         description: chat.description,
         created_at: chat.created_at
@@ -81,6 +84,7 @@ export async function updateChat({name=null, description=null, password=null, ch
     })
 
     return {
+        id: chat.id,
         name: chatUpdated.name,
         description: chatUpdated.description,
         created_at: chatUpdated.created_at
