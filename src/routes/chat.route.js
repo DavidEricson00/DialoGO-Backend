@@ -12,12 +12,15 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
-router.post("/", authMiddleware, createChatController);
-router.get("/", authMiddleware, getChatsController);
 router.get("/:chatId", authMiddleware, getChatByIdController);
-router.patch("/", authMiddleware, updateChatController);
-router.delete("/:chatId", authMiddleware, deleteChatController);
+router.get("/", authMiddleware, getChatsController);
+
 router.post("/join/:chatId", authMiddleware, joinChatController);
+router.post("/", authMiddleware, createChatController);
+
+router.patch("/", authMiddleware, updateChatController);
+
 router.delete("/leave/:chatId", authMiddleware, leaveChatController);
+router.delete("/:chatId", authMiddleware, deleteChatController);
 
 export default router;
