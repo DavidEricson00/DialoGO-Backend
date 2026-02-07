@@ -2,9 +2,9 @@ import { getChatMessages, sendMessage } from "../repository/message.repository";
 
 export async function getChatMessagesController(req, res) {
     try {
-        const { id } = req.params;
+        const { chatId } = req.params;
         
-        const chatMessages = await getChatMessages(id);
+        const chatMessages = await getChatMessages(chatId);
 
         return res.json(chatMessages);
     } catch(err) {
