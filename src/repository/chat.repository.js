@@ -1,16 +1,29 @@
 import pool from "../db.js";
 
-export async function getChats({ search, orderBy, orderDirection }) {
+export async function getChats({ search, orderBy, orderDirection, hasPassword }) {
   let query = `
-    SELECT id, name, description, created_at
+    SELECT id, name, description, created_at, password
     FROM chats
   `;
 
   const values = [];
+  const conditions = [];
 
   if (search) {
     values.push(`%${search}%`);
-    query += ` WHERE name ILIKE $${values.length}`;
+    conditions.push(`name ILIKE $${values.length}`);
+  }
+
+  if (hasPassword === true) {
+    conditions.push(`password IS NOT NULL`);
+  }
+
+  if (hasPassword === false) {
+    conditions.push(`password IS NULL`);
+  }
+
+  if (conditions.length > 0) {
+    query += ` WHERE ${conditions.join(" AND ")}`;
   }
 
   query += ` ORDER BY ${orderBy} ${orderDirection}`;

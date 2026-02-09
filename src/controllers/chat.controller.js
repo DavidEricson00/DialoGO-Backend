@@ -30,12 +30,13 @@ export async function createChatController(req, res) {
 
 export async function getChatsController(req, res) {
   try {
-    const { search, order, direction } = req.query;
+    const { search, order, direction, hasPassword } = req.query;
 
     const chats = await getChats({
       search,
       order,
-      direction
+      direction,
+      hasPassword
     });
 
     return res.json(chats);

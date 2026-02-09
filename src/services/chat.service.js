@@ -31,20 +31,31 @@ export async function createChat({ name, description = null, password = null, ow
   };
 }
 
-export async function getChats({search, order, direction}) {
+export async function getChats({search, order, direction, hasPassword}) {
   const allowedOrder = ["name", "created_at"]
   const allowedDirection = ["asc", "desc"]
 
   const orderBy = allowedOrder.includes(order) ? order : "created_at";
   const orderDirection = allowedDirection.includes(direction) ? direction : "desc";
   
-  const chats = await getChatsRepo({search, orderBy, orderDirection});
+  let passwordFilter = null;
+
+  if (hasPassword === "true") passwordFilter = true;
+  if (hasPassword === "false") passwordFilter = false;
+
+  const chats = await getChatsRepo({
+    search, 
+    orderBy, 
+    orderDirection,
+    hasPassword: passwordFilter 
+  });
   
   return chats.map(chat => ({
     id: chat.id,
     name: chat.name,
     description: chat.description,
-    created_at: chat.created_at
+    created_at: chat.created_at,
+    hasPassword: passwordFilter !== null
   }));
 }
 
