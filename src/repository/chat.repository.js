@@ -1,9 +1,21 @@
 import pool from "../db.js";
 
-export async function getChats() {
-  const { rows } = await pool.query(
-    `SELECT id, name, description, created_at, owner_id FROM chats`
-  );
+export async function getChats({ search, orderBy, orderDirection }) {
+  let query = `
+    SELECT id, name, description, created_at
+    FROM chats
+  `;
+
+  const values = [];
+
+  if (search) {
+    values.push(`%${search}%`);
+    query += ` WHERE name ILIKE $${values.length}`;
+  }
+
+  query += ` ORDER BY ${orderBy} ${orderDirection}`;
+
+  const { rows } = await pool.query(query, values);
   return rows;
 }
 
@@ -57,6 +69,7 @@ export async function joinChat(userId, chatId) {
       INSERT INTO users_chats (user_id, chat_id)
       VALUES ($1, $2)
       RETURNING user_id, chat_id
+      ON CONFLICT DO NOTHING
     `,
     [userId, chatId]
   );

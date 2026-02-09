@@ -1,4 +1,4 @@
-import { getChatMessages, sendMessage } from "../repository/message.repository";
+import { getChatMessages, sendMessage } from "../repository/message.repository.js";
 
 export async function getChatMessagesController(req, res) {
     try {

@@ -31,8 +31,15 @@ export async function createChat({ name, description = null, password = null, ow
   };
 }
 
-export async function getChats() {
-  const chats = await getChatsRepo();
+export async function getChats({search, order, direction}) {
+  const allowedOrder = ["name", "created_at"]
+  const allowedDirection = ["asc", "desc"]
+
+  const orderBy = allowedOrder.includes(order) ? order : "created_at";
+  const orderDirection = allowedDirection.includes(direction) ? direction : "desc";
+  
+  const chats = await getChatsRepo({search, orderBy, orderDirection});
+  
   return chats.map(chat => ({
     id: chat.id,
     name: chat.name,
