@@ -26,37 +26,35 @@ export async function createChat({ name, description = null, password = null, ow
     id: chat.id,
     name: chat.name,
     description: chat.description,
-    created_at: chat.created_at,
-    ownerId: chat.owner_id
+    owner_id: chat.owner_id,
+    created_at: chat.created_at
   };
 }
 
-export async function getChats({search, order, direction, hasPassword}) {
-  const allowedOrder = ["name", "created_at"]
-  const allowedDirection = ["asc", "desc"]
+export async function getChats({ search, order, direction, hasPassword }) {
+  const allowedOrder = ["name", "created_at"];
+  const allowedDirection = ["asc", "desc"];
 
   const orderBy = allowedOrder.includes(order) ? order : "created_at";
   const orderDirection = allowedDirection.includes(direction) ? direction : "desc";
-  
-  let passwordFilter = null;
 
+  let passwordFilter = null;
   if (hasPassword === "true") passwordFilter = true;
   if (hasPassword === "false") passwordFilter = false;
 
   const chats = await getChatsRepo({
-    search, 
-    orderBy, 
+    search,
+    orderBy,
     orderDirection,
-    hasPassword: passwordFilter 
+    hasPassword: passwordFilter
   });
-  
+
   return chats.map(chat => ({
     id: chat.id,
     name: chat.name,
     description: chat.description,
-    created_at: chat.created_at,
     users_count: chat.users_count,
-    hasPassword: passwordFilter !== null
+    has_password: chat.has_password
   }));
 }
 
@@ -70,8 +68,10 @@ export async function getChatById(id) {
     id: chat.id,
     name: chat.name,
     description: chat.description,
+    owner_id: chat.owner_id,
+    created_at: chat.created_at,
     users_count: chat.users_count,
-    created_at: chat.created_at
+    has_password: chat.has_password
   };
 }
 

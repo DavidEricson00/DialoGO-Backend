@@ -3,12 +3,13 @@ import pool from "../db.js";
 export async function getChats({ search, orderBy, orderDirection, hasPassword }) {
   let query = `
     SELECT 
-      c.id, 
-      c.name, 
-      c.description, 
-      c.created_at, 
-      c.password
-      COUNT(uc.user_id)::int AS users_count
+      c.id,
+      c.name,
+      c.description,
+      c.owner_id,
+      c.created_at,
+      COUNT(uc.user_id)::int AS users_count,
+      (c.password IS NOT NULL) AS has_password
     FROM chats c
     LEFT JOIN users_chats uc ON uc.chat_id = c.id
   `;
@@ -18,22 +19,25 @@ export async function getChats({ search, orderBy, orderDirection, hasPassword })
 
   if (search) {
     values.push(`%${search}%`);
-    conditions.push(`name ILIKE $${values.length}`);
+    conditions.push(`c.name ILIKE $${values.length}`);
   }
 
   if (hasPassword === true) {
-    conditions.push(`password IS NOT NULL`);
+    conditions.push(`c.password IS NOT NULL`);
   }
 
   if (hasPassword === false) {
-    conditions.push(`password IS NULL`);
+    conditions.push(`c.password IS NULL`);
   }
 
   if (conditions.length > 0) {
     query += ` WHERE ${conditions.join(" AND ")}`;
   }
 
-  query += ` ORDER BY ${orderBy} ${orderDirection}`;
+  query += `
+    GROUP BY c.id
+    ORDER BY ${orderBy} ${orderDirection}
+  `;
 
   const { rows } = await pool.query(query, values);
   return rows;
@@ -55,15 +59,16 @@ export async function getChatById(id) {
   const { rows } = await pool.query(
     `
       SELECT 
-        id, 
-        name, 
-        description, 
-        created_at, 
-        owner_id, 
-        COUNT(uc.user_id)::int AS users_count
-      FROM chats
+        c.id,
+        c.name,
+        c.description,
+        c.owner_id,
+        c.created_at,
+        COUNT(uc.user_id)::int AS users_count,
+        (c.password IS NOT NULL) AS has_password
+      FROM chats c
       LEFT JOIN users_chats uc ON uc.chat_id = c.id
-      WHERE id = $1
+      WHERE c.id = $1
       GROUP BY c.id
     `,
     [id]
@@ -96,8 +101,8 @@ export async function joinChat(userId, chatId) {
     `
       INSERT INTO users_chats (user_id, chat_id)
       VALUES ($1, $2)
-      RETURNING user_id, chat_id
       ON CONFLICT DO NOTHING
+      RETURNING user_id, chat_id
     `,
     [userId, chatId]
   );
