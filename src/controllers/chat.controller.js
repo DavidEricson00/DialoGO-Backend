@@ -28,20 +28,28 @@ export async function createChatController(req, res) {
   }
 }
 
-export async function getChatsController(req, res) {
+export async function getAvailableChatsController(req, res) {
   try {
     const { search, order, direction, hasPassword } = req.query;
 
-    const chats = await getChats({
-      search,
-      order,
-      direction,
-      hasPassword
-    });
+  const chats = await getAvailableChats(
+    req.user.id,
+    { search, order, direction, hasPassword }
+  );
 
     return res.json(chats);
   } catch (err) {
     return handleError(res, err);
+  }
+}
+
+export async function getUserChatsController(req, res) {
+  try {
+    const chats = await getUserChats(req.user.id);
+
+    return res.json(chats)
+  } catch(err) {
+    return handleError(res, err)
   }
 }
 

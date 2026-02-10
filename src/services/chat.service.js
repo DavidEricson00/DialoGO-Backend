@@ -88,7 +88,7 @@ export async function getAvailableChats(
 }
 
 
-export async function getUserChatsService(userId) {
+export async function getUserChats(userId) {
   const chats = await getUserChatsRepo(userId);
 
   return chats.map(chat => ({
