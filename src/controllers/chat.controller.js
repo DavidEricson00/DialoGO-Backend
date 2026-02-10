@@ -83,11 +83,13 @@ export async function deleteChatController(req, res) {
 
 export async function joinChatController(req, res) {
   try {
-    const { chatId } = req.params;
-    await joinChat(chatId, req.user.id);
-    return res.sendStatus(200);
+    const { chatId } = req.params
+    const { password } = req.body
+
+    await joinChat(chatId, req.user.id, password)
+    return res.sendStatus(200)
   } catch (err) {
-    return handleError(res, err);
+    return handleError(res, err)
   }
 }
 

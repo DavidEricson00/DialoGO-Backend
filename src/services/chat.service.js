@@ -1,3 +1,5 @@
+import bcrypt from "bcrypt"
+import { BYCRYPT_SALT_ROUNDS } from "../config/env.js";
 import {
   createChat as createChatRepo,
   getChats as getChatsRepo,
@@ -7,7 +9,8 @@ import {
   joinChat as joinChatRepo,
   leaveChat as leaveChatRepo,
   userBelongsToChat,
-  userIsChatOwner
+  userIsChatOwner,
+  getChatPasswordHash
 } from "../repository/chat.repository.js";
 
 function error(message, statusCode) {
@@ -16,10 +19,31 @@ function error(message, statusCode) {
   return err;
 }
 
+
 export async function createChat({ name, description = null, password = null, ownerId }) {
   if (!name || !ownerId) throw error("Dados inválidos", 400);
 
-  const chat = await createChatRepo({ name, description, password, ownerId });
+  let chat;
+
+  if (password) {
+    const saltRounds = Number(BYCRYPT_SALT_ROUNDS);
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    chat = await createChatRepo({
+      name,
+      description,
+      password: passwordHash,
+      ownerId
+    });
+  } else {
+    chat = await createChatRepo({
+      name,
+      description,
+      password: null,
+      ownerId
+    });
+  }
+
   await joinChatRepo(ownerId, chat.id);
 
   return {
@@ -30,6 +54,7 @@ export async function createChat({ name, description = null, password = null, ow
     created_at: chat.created_at
   };
 }
+
 
 export async function getChats({ search, order, direction, hasPassword }) {
   const allowedOrder = ["name", "created_at"];
@@ -75,6 +100,7 @@ export async function getChatById(id) {
   };
 }
 
+
 export async function updateChat({ name = null, description = null, password = null, chatId, ownerId }) {
   if (!chatId || !ownerId) throw error("Dados inválidos", 400);
 
@@ -98,17 +124,29 @@ export async function deleteChat(chatId, ownerId) {
   const isOwner = await userIsChatOwner(ownerId, chatId);
   if (!isOwner) throw error("Usuário não é o dono do chat", 403);
 
+  
   await deleteChatRepo(chatId);
 }
 
-export async function joinChat(chatId, userId) {
+
+export async function joinChat(chatId, userId, password = null) {
   if (!chatId || !userId) throw error("Dados inválidos", 400);
 
   const isMember = await userBelongsToChat(userId, chatId);
   if (isMember) throw error("Usuário já participa do chat", 409);
 
+  const passwordHash = await getChatPasswordHash(chatId);
+
+  if (passwordHash) {
+    if (!password) throw error("Senha obrigatória", 401);
+
+    const isValid = await bcrypt.compare(password, passwordHash);
+    if (!isValid) throw error("Senha incorreta", 403);
+  }
+
   await joinChatRepo(userId, chatId);
 }
+
 
 export async function leaveChat(chatId, userId) {
   if (!chatId || !userId) throw error("Dados inválidos", 400);

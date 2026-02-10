@@ -35,8 +35,6 @@ export async function loginUser({username, password}) {
         throw new Error("Dados inválidos");
     }
 
-    const saltRounds = Number(BYCRYPT_SALT_ROUNDS);
-
     const user = await findUserByUsernameRepo(username);
 
     if(!user) {

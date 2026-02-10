@@ -140,3 +140,16 @@ export async function userIsChatOwner(userId, chatId) {
   );
   return rowCount > 0;
 }
+
+export async function getChatPasswordHash(chatId) {
+  const { rows } = await pool.query(
+    `
+      SELECT password
+      FROM chats
+      WHERE id = $1
+    `,
+    [chatId]
+  );
+
+  return rows[0]?.password ?? null;
+}
