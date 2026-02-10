@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { 
     createChatController,
-    getChatsController,
+    getUserChatsController,
+    getAvailableChatsController,
     getChatByIdController,
     updateChatController,
     deleteChatController,
@@ -13,7 +14,8 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 const router = Router();
 
 router.get("/:chatId", authMiddleware, getChatByIdController);
-router.get("/", authMiddleware, getChatsController);
+router.get("/me", authMiddleware, getUserChatsController);
+router.get("/", authMiddleware, getAvailableChatsController);
 
 router.post("/join/:chatId", authMiddleware, joinChatController);
 router.post("/", authMiddleware, createChatController);
