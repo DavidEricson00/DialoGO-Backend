@@ -1,6 +1,18 @@
 import pool from "../db.js";
 
-export async function getChats({ search, orderBy, orderDirection, hasPassword }) {
+export async function getAvailableChats(
+  userId,
+  { search, orderBy, orderDirection, hasPassword }
+) {
+  const allowedOrderMap = {
+    name: "c.name",
+    created_at: "c.created_at",
+    users_count: "users_count"
+  };
+
+  const safeOrderBy = allowedOrderMap[orderBy] || "c.created_at";
+  const safeDirection = orderDirection === "asc" ? "ASC" : "DESC";
+
   let query = `
     SELECT 
       c.id,
@@ -12,9 +24,15 @@ export async function getChats({ search, orderBy, orderDirection, hasPassword })
       (c.password IS NOT NULL) AS has_password
     FROM chats c
     LEFT JOIN users_chats uc ON uc.chat_id = c.id
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM users_chats uc2
+      WHERE uc2.chat_id = c.id
+        AND uc2.user_id = $1
+    )
   `;
 
-  const values = [];
+  const values = [userId];
   const conditions = [];
 
   if (search) {
@@ -31,17 +49,41 @@ export async function getChats({ search, orderBy, orderDirection, hasPassword })
   }
 
   if (conditions.length > 0) {
-    query += ` WHERE ${conditions.join(" AND ")}`;
+    query += ` AND ${conditions.join(" AND ")}`;
   }
 
   query += `
     GROUP BY c.id
-    ORDER BY ${orderBy} ${orderDirection}
+    ORDER BY ${safeOrderBy} ${safeDirection}
   `;
 
   const { rows } = await pool.query(query, values);
   return rows;
 }
+
+export async function getUserChats(userId) {
+  const { rows } = await pool.query(
+    `
+      SELECT 
+        c.id,
+        c.name,
+        c.description,
+        c.owner_id,
+        c.created_at,
+        COUNT(uc.user_id)::int AS users_count,
+        (c.password IS NOT NULL) AS has_password
+      FROM chats c
+      JOIN users_chats uc ON uc.chat_id = c.id
+      WHERE uc.user_id = $1
+      GROUP BY c.id
+      ORDER BY c.created_at DESC
+    `,
+    [userId]
+  );
+
+  return rows;
+}
+
 
 export async function createChat({ name, description = null, password = null, ownerId }) {
   const { rows } = await pool.query(
