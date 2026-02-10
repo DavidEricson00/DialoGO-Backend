@@ -2,8 +2,15 @@ import pool from "../db.js";
 
 export async function getChats({ search, orderBy, orderDirection, hasPassword }) {
   let query = `
-    SELECT id, name, description, created_at, password
-    FROM chats
+    SELECT 
+      c.id, 
+      c.name, 
+      c.description, 
+      c.created_at, 
+      c.password
+      COUNT(uc.user_id)::int AS users_count
+    FROM chats c
+    LEFT JOIN users_chats uc ON uc.chat_id = c.id
   `;
 
   const values = [];
@@ -47,9 +54,17 @@ export async function createChat({ name, description = null, password = null, ow
 export async function getChatById(id) {
   const { rows } = await pool.query(
     `
-      SELECT id, name, description, created_at, owner_id
+      SELECT 
+        id, 
+        name, 
+        description, 
+        created_at, 
+        owner_id, 
+        COUNT(uc.user_id)::int AS users_count
       FROM chats
+      LEFT JOIN users_chats uc ON uc.chat_id = c.id
       WHERE id = $1
+      GROUP BY c.id
     `,
     [id]
   );

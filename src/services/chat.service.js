@@ -55,6 +55,7 @@ export async function getChats({search, order, direction, hasPassword}) {
     name: chat.name,
     description: chat.description,
     created_at: chat.created_at,
+    users_count: chat.users_count,
     hasPassword: passwordFilter !== null
   }));
 }
@@ -69,6 +70,7 @@ export async function getChatById(id) {
     id: chat.id,
     name: chat.name,
     description: chat.description,
+    users_count: chat.users_count,
     created_at: chat.created_at
   };
 }
