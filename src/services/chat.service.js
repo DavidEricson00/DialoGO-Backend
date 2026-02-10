@@ -2,15 +2,16 @@ import bcrypt from "bcrypt"
 import { BYCRYPT_SALT_ROUNDS } from "../config/env.js";
 import {
   createChat as createChatRepo,
-  getChats as getChatsRepo,
+  getAvailableChats as getAvailableChatsRepo,
   updateChat as updateChatRepo,
   getChatById as getChatByIdRepo,
   deleteChat as deleteChatRepo,
   joinChat as joinChatRepo,
   leaveChat as leaveChatRepo,
+  getUserChats as getUserChatsRepo,
   userBelongsToChat,
   userIsChatOwner,
-  getChatPasswordHash
+  getChatPasswordHash,
 } from "../repository/chat.repository.js";
 
 function error(message, statusCode) {
@@ -56,8 +57,11 @@ export async function createChat({ name, description = null, password = null, ow
 }
 
 
-export async function getChats({ search, order, direction, hasPassword }) {
-  const allowedOrder = ["name", "created_at"];
+export async function getAvailableChats(
+  userId,
+  { search, order, direction, hasPassword }
+) {
+  const allowedOrder = ["name", "users_count", "created_at"];
   const allowedDirection = ["asc", "desc"];
 
   const orderBy = allowedOrder.includes(order) ? order : "created_at";
@@ -67,7 +71,7 @@ export async function getChats({ search, order, direction, hasPassword }) {
   if (hasPassword === "true") passwordFilter = true;
   if (hasPassword === "false") passwordFilter = false;
 
-  const chats = await getChatsRepo({
+  const chats = await getAvailableChatsRepo(userId, {
     search,
     orderBy,
     orderDirection,
@@ -82,6 +86,20 @@ export async function getChats({ search, order, direction, hasPassword }) {
     has_password: chat.has_password
   }));
 }
+
+
+export async function getUserChatsService(userId) {
+  const chats = await getUserChatsRepo(userId);
+
+  return chats.map(chat => ({
+    id: chat.id,
+    name: chat.name,
+    description: chat.description,
+    users_count: chat.users_count,
+    has_password: chat.has_password
+  }));
+}
+
 
 export async function getChatById(id) {
   if (!id) throw error("Id inválido", 400);
@@ -137,7 +155,7 @@ export async function joinChat(chatId, userId, password = null) {
 
   const passwordHash = await getChatPasswordHash(chatId);
 
-  if (passwordHash) {
+  if (passwordHash && !password?.trim()) {
     if (!password) throw error("Senha obrigatória", 401);
 
     const isValid = await bcrypt.compare(password, passwordHash);
