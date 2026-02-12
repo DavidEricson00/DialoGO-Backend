@@ -13,8 +13,8 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
-router.get("/:chatId", authMiddleware, getChatByIdController);
 router.get("/me", authMiddleware, getUserChatsController);
+router.get("/:chatId", authMiddleware, getChatByIdController);
 router.get("/", authMiddleware, getAvailableChatsController);
 
 router.post("/join/:chatId", authMiddleware, joinChatController);
