@@ -1,4 +1,9 @@
-import { createUser, getUserById, loginUser } from "../services/user.service.js";
+import { 
+    createUser,
+    getUserById,
+    loginUser,
+    updateUser
+} from "../services/user.service.js";
 
 export async function createUserController(req, res) {
     try {
@@ -49,4 +54,23 @@ export async function getMeController(req, res) {
         console.error(err)
         return res.status(404).json({message: "Usuário não encontrado"})
     }
+}
+
+export async function updateUserController(req, res) {
+    try {
+        const {username, password, avatar} = req.body;
+
+        const user = await updateUser({
+            id: req.user.id,
+            username,
+            password,
+            avatar
+        })
+
+        return res.json(user);
+    } catch(err) {
+        console.error(err)
+        return res.status(500).json({message: "Não foi possível atualizar o usário"})
+    }
+    
 }
