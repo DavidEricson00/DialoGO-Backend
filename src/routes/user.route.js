@@ -10,6 +10,6 @@ router.get("/me", authMiddleware, getMeController);
 router.post("/create", createUserController);
 router.post("/login", loginController);
 
-router.put("/", authMiddleware, updateUserController);
+router.patch("/", authMiddleware, updateUserController);
 
 export default router;

@@ -69,7 +69,8 @@ export async function loginUser({username, password}) {
         user: {
             id: user.id,
             username: user.username,
-            avatar: user.avatar
+            avatar: user.avatar,
+            created_at: user.created_at
         },
     };
 }
