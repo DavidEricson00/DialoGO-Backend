@@ -24,6 +24,10 @@ function error(message, statusCode) {
 export async function createChat({ name, description = null, password = null, ownerId }) {
   if (!name || !ownerId) throw error("Dados inválidos", 400);
 
+  if (name.length > 32 || description.length > 128 || password.length > 100) {
+        throw new Error("Dados inválidos");
+  }
+
   let chat;
 
   if (password) {
@@ -121,6 +125,10 @@ export async function getChatById(id) {
 
 export async function updateChat({ name = null, description = null, password = null, chatId, ownerId }) {
   if (!chatId || !ownerId) throw error("Dados inválidos", 400);
+
+  if (name.length > 32 || description.length > 128 || password.length > 100) {
+        throw new Error("Dados inválidos");
+  }
 
   const isOwner = await userIsChatOwner(ownerId, chatId);
   if (!isOwner) throw error("Usuário não é o dono do chat", 403);

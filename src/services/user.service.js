@@ -13,6 +13,10 @@ export async function createUser({username, password}) {
         throw new Error("Dados inválidos");
     }
 
+    if (username.length > 20 || password.length < 8 || password.length > 100) {
+        throw new Error("Dados inválidos");
+    }
+
     const saltRounds = Number(BYCRYPT_SALT_ROUNDS);
 
     const passwordHash = await bcrypt.hash(password, saltRounds);
