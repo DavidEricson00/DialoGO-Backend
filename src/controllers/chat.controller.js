@@ -2,7 +2,8 @@ import {
   createChat,
   deleteChat,
   getChatById,
-  getChats,
+  getAvailableChats,
+  getUserChats,
   joinChat,
   leaveChat,
   updateChat
