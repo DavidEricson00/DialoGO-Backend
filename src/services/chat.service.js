@@ -155,11 +155,15 @@ export async function joinChat(chatId, userId, password = null) {
 
   const passwordHash = await getChatPasswordHash(chatId);
 
-  if (passwordHash && !password?.trim()) {
-    if (!password) throw error("Senha obrigatória", 401);
+  if (passwordHash) {
+    if (!password || !password.trim()) {
+      throw error("Senha obrigatória", 401);
+    }
 
     const isValid = await bcrypt.compare(password, passwordHash);
-    if (!isValid) throw error("Senha incorreta", 403);
+    if (!isValid) {
+      throw error("Senha incorreta", 403);
+    }
   }
 
   await joinChatRepo(userId, chatId);
