@@ -6,7 +6,7 @@ import {
     createUser as createUserRepo,
     findUserByUsername as findUserByUsernameRepo,
     findUserById as findUserByIdRepo,
-    upadteUser as upadteUserRepo,
+    upadteUser as updateUserRepo,
 }  from "../repository/user.repository.js"
 
 export async function createUser({username, password}) {
