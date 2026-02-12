@@ -39,7 +39,7 @@ export async function findUserById(id) {
     return rows[0];
 }
 
-export async function upadteUser(username=null, avatar=null, password=null, id) {
+export async function upadteUser(id, {username=null, avatar=null, password=null}) {
     const query = `
         UPDATE users
         SET

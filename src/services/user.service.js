@@ -6,6 +6,7 @@ import {
     createUser as createUserRepo,
     findUserByUsername as findUserByUsernameRepo,
     findUserById as findUserByIdRepo,
+    upadteUser as upadteUserRepo,
 }  from "../repository/user.repository.js"
 
 export async function createUser({username, password}) {
@@ -77,6 +78,40 @@ export async function getUserById(id) {
     const user = await findUserByIdRepo(id);
 
     if(!user) throw new Error("Usuário não encontrado");
+
+    return {
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar,
+        created_at: user.created_at
+    };
+}
+
+export async function updateUser({ id, username = null, password = null, avatar = null }) {
+    if (!id) {
+        throw new Error("Usuário inválido");
+    }
+
+    if (username !== null && username.length > 20) {
+        throw new Error("Username inválido");
+    }
+
+    if (password !== null && (password.length < 8 || password.length > 100)) {
+        throw new Error("Senha inválida");
+    }
+
+    let passwordHash = null;
+
+    if (password !== null) {
+        const saltRounds = Number(BYCRYPT_SALT_ROUNDS);
+        passwordHash = await bcrypt.hash(password, saltRounds);
+    }
+
+    const user = await updateUserRepo(id, {
+        username,
+        avatar,
+        password: passwordHash
+    });
 
     return {
         id: user.id,
