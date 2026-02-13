@@ -39,7 +39,7 @@ export async function findUserById(id) {
     return rows[0];
 }
 
-export async function upadteUser(id, {username=null, avatar=null, password=null}) {
+export async function updateUser(id, {username = null, avatar = null, password = null}) {
     const query = `
         UPDATE users
         SET
@@ -47,14 +47,14 @@ export async function upadteUser(id, {username=null, avatar=null, password=null}
             avatar = COALESCE($2, avatar),
             password = COALESCE($3, password)
         WHERE id = $4
+        RETURNING id, username, avatar, created_at
     `;
 
-    const values = [username, avatar, password, id]
+    const values = [username, avatar, password, id];
 
-    const {rows} = await pool.query(query, values);
+    const { rows } = await pool.query(query, values);
     return rows[0];
 }
-
 
 export async function getUserChats(userId) {
     const query = `
