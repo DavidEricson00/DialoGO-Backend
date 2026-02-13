@@ -6,7 +6,7 @@ import {
     createUser as createUserRepo,
     findUserByUsername as findUserByUsernameRepo,
     findUserById as findUserByIdRepo,
-    upadteUser as updateUserRepo,
+    updateUser as updateUserRepo,
 }  from "../repository/user.repository.js"
 
 export async function createUser({username, password}) {
@@ -88,9 +88,10 @@ export async function getUserById(id) {
     };
 }
 
+
 export async function updateUser({ id, username = null, password = null, avatar = null }) {
     if (!id) {
-        throw new Error("Usuário inválido");
+        throw new Error("ID do usuário é obrigatório");
     }
 
     if (username !== null && username.length > 20) {
@@ -102,9 +103,8 @@ export async function updateUser({ id, username = null, password = null, avatar 
     }
 
     let passwordHash = null;
-
     if (password !== null) {
-        const saltRounds = Number(BYCRYPT_SALT_ROUNDS);
+        const saltRounds = Number(BYCRYPT_SALT_ROUNDS || 10);
         passwordHash = await bcrypt.hash(password, saltRounds);
     }
 
@@ -114,10 +114,9 @@ export async function updateUser({ id, username = null, password = null, avatar 
         password: passwordHash
     });
 
-    return {
-        id: user.id,
-        username: user.username,
-        avatar: user.avatar,
-        created_at: user.created_at
-    };
+    if (!user) {
+        throw new Error("Usuário não encontrado");
+    }
+
+    return user;
 }
