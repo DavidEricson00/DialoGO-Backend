@@ -58,19 +58,18 @@ export async function getMeController(req, res) {
 
 export async function updateUserController(req, res) {
     try {
-        const {username, password, avatar} = req.body;
+        const { username, password, avatar } = req.body;
 
         const user = await updateUser({
             id: req.user.id,
-            username,
-            password,
-            avatar
-        })
+            username: username || null,
+            password: password || null,
+            avatar: avatar || null
+        });
 
         return res.json(user);
-    } catch(err) {
-        console.error(err)
-        return res.status(500).json({message: "Não foi possível atualizar o usário"})
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Não foi possível atualizar o usuário" });
     }
-    
 }
