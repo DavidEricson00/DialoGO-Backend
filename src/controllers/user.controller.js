@@ -68,8 +68,12 @@ export async function updateUserController(req, res) {
         });
 
         return res.json(user);
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Não foi possível atualizar o usuário" });
+    } catch (err){
+        if (err.code == "23505") {
+            return res.status(409).json({message: "Nome se usuário já existe"});
+        }
+
+        console.error(err)
+        return res.status(500).json({message: "Erro ao atualziar o usuário"})
     }
 }
