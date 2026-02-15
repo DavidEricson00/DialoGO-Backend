@@ -70,12 +70,16 @@ export async function getUserChats(userId) {
         c.description,
         c.owner_id,
         c.created_at,
-        COUNT(uc.user_id)::int AS users_count,
+        (
+          SELECT COUNT(*) 
+          FROM users_chats uc2 
+          WHERE uc2.chat_id = c.id
+        )::int AS users_count,
         (c.password IS NOT NULL) AS has_password
       FROM chats c
-      JOIN users_chats uc ON uc.chat_id = c.id
+      JOIN users_chats uc 
+        ON uc.chat_id = c.id
       WHERE uc.user_id = $1
-      GROUP BY c.id
       ORDER BY c.created_at DESC
     `,
     [userId]
@@ -83,7 +87,6 @@ export async function getUserChats(userId) {
 
   return rows;
 }
-
 
 export async function createChat({ name, description = null, password = null, ownerId }) {
   const { rows } = await pool.query(
@@ -106,17 +109,20 @@ export async function getChatById(id) {
         c.description,
         c.owner_id,
         c.created_at,
-        COUNT(uc.user_id)::int AS users_count,
+        (
+          SELECT COUNT(*) 
+          FROM users_chats uc2 
+          WHERE uc2.chat_id = c.id
+        )::int AS users_count,
         (c.password IS NOT NULL) AS has_password
       FROM chats c
-      LEFT JOIN users_chats uc ON uc.chat_id = c.id
       WHERE c.id = $1
-      GROUP BY c.id
     `,
     [id]
   );
   return rows[0];
 }
+
 
 export async function updateChat({ name = null, description = null, password = null, chatId }) {
   const { rows } = await pool.query(
