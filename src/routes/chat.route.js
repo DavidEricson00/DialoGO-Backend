@@ -7,13 +7,15 @@ import {
     updateChatController,
     deleteChatController,
     joinChatController,
-    leaveChatController
+    leaveChatController,
+    getUsersFromChatController
  } from "../controllers/chat.controller.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
 router.get("/me", authMiddleware, getUserChatsController);
+router.get("/:chatId/users", authMiddleware, getUsersFromChatController);
 router.get("/:chatId", authMiddleware, getChatByIdController);
 router.get("/", authMiddleware, getAvailableChatsController);
 
