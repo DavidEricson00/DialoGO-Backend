@@ -2,7 +2,7 @@ import {
     createUser,
     getUserById,
     loginUser,
-    updateUser
+    updateUser,
 } from "../services/user.service.js";
 
 export async function createUserController(req, res) {
@@ -76,4 +76,20 @@ export async function updateUserController(req, res) {
         console.error(err)
         return res.status(500).json({message: "Erro ao atualziar o usuário"})
     }
+}
+
+export async function getUserByIdController(req, res) {
+  try {
+    const { id } = req.params;
+    const user = await getUserById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
+    }
+
+    return res.json(user);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Erro interno no servidor" });
+  }
 }
