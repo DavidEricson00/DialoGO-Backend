@@ -161,6 +161,25 @@ export async function leaveChat(userId, chatId) {
   );
 }
 
+export async function getUsersFromChat(chatId) {
+  const {rows} = await pool.query(
+    `
+      SELECT
+        u.id,
+        u.username,
+        u.avatar,
+        u.created_at
+      FROM USERS u
+      JOIN users_chats uc 
+        ON uc.chat_id = u.id
+      WHERE uc.chat_id = $1
+    `,
+    [chatId]
+  );
+
+  return rows
+}
+
 export async function userBelongsToChat(userId, chatId) {
   const { rowCount } = await pool.query(
     `

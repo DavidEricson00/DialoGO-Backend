@@ -5,12 +5,12 @@ const pool = new Pool({
   connectionString: DATABASE_URL,
 });
 
-pool.on("connect", () => {
-  console.log("Conectado ao PostgreSQL!");
-});
+// pool.on("connect", () => {
+//   console.log("Conectado ao PostgreSQL!");
+// });
 
-pool.on("error", (err) => {
-  console.error("Erro na pool do PostgreSQL:", err);
-});
+// pool.on("error", (err) => {
+//   console.error("Erro na pool do PostgreSQL:", err);
+// });
 
 export default pool;
