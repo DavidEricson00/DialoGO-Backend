@@ -9,6 +9,7 @@ import {
   joinChat as joinChatRepo,
   leaveChat as leaveChatRepo,
   getUserChats as getUserChatsRepo,
+  getUsersFromChat as getUsersFromChatRepo,
   userBelongsToChat,
   userIsChatOwner,
   getChatPasswordHash,
@@ -144,6 +145,7 @@ export async function updateChat({ name = null, description = null, password = n
   };
 }
 
+
 export async function deleteChat(chatId, ownerId) {
   if (!chatId || !ownerId) throw error("Dados inválidos", 400);
 
@@ -182,10 +184,26 @@ export async function leaveChat(chatId, userId) {
   if (!chatId || !userId) throw error("Dados inválidos", 400);
 
   const isMember = await userBelongsToChat(userId, chatId);
-  if (!isMember) throw error("Usuário não participa do chat", 409);
+  if (!isMember) throw error("Usuário não participa do chat", 403);
 
   const isOwner = await userIsChatOwner(userId, chatId);
   if (isOwner) throw error("Dono não pode sair do chat", 403);
 
   await leaveChatRepo(userId, chatId);
+}
+
+export async function getUsersFromChat(chatId, userId) {
+  if (!chatId || !userId) throw error("Dados inválidos", 400);
+
+  const isMember = await userBelongsToChat(userId, chatId);
+  if (!isMember) throw error("Usuário não participa do chat", 403);
+
+  const users = await getUsersFromChatRepo(chatId)
+
+  return users.map(user => ({
+    id: user.id,
+    username: user.username,
+    avatar: user.avatar,
+    created_at: user.created_at
+  }));
 }
