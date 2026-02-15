@@ -6,7 +6,8 @@ import {
   getUserChats,
   joinChat,
   leaveChat,
-  updateChat
+  updateChat,
+  getUsersFromChat
 } from "../services/chat.service.js";
 
 function handleError(res, err) {
@@ -107,6 +108,16 @@ export async function leaveChatController(req, res) {
     const { chatId } = req.params;
     await leaveChat(chatId, req.user.id);
     return res.sendStatus(200);
+  } catch (err) {
+    return handleError(res, err);
+  }
+}
+
+export async function getUsersFromChatController(req, res) {
+  try {
+    const{chatId} = req.params;
+    const users = await getUsersFromChat(chatId, req.user.id);
+    return res.json(users);
   } catch (err) {
     return handleError(res, err);
   }
