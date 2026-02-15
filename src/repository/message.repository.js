@@ -13,7 +13,7 @@ export async function getChatMessages(chatId) {
     return rows;
 }
 
-export async function sendMessage(content, chatId, userId) {
+export async function sendMessage({content, chatId, userId}) {
     const query = `
         INSERT INTO messages (content, chat_id, user_id)
         VALUES($1, $2, $3)

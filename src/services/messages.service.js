@@ -1,8 +1,8 @@
-import { userBelongsToChat } from "../repository/chat.repository";
+import { userBelongsToChat } from "../repository/chat.repository.js";
 import { 
     getChatMessages as getChatMessagesRepo,
     sendMessage as sendMessageRepo
-} from "../repository/message.repository";
+} from "../repository/message.repository.js";
 
 export async function getChatMessages(id) {
     if(!id) {
@@ -19,7 +19,7 @@ export async function getChatMessages(id) {
     }));
 }
 
-export async function sendMessage(content, chatId, userId) {
+export async function sendMessage({content, chatId, userId}) {
     if(!content || !chatId || !userId) {
         throw new Error("Dados inválidos");
     }
