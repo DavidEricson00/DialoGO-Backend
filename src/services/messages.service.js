@@ -15,7 +15,9 @@ export async function getChatMessages(id) {
 
     return messages.map(msg => ({
         content: msg.content,
-        sent_at: msg.sent_at
+        sent_at: msg.sent_at,
+        chat_id: msg.chat_id,
+        user_id: msg.user_id
     }));
 }
 

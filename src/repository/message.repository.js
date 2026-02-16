@@ -2,7 +2,7 @@ import pool from "../db.js";
 
 export async function getChatMessages(chatId) {
     const query = `
-        SELECT content, sent_at
+        SELECT content, sent_at, chat_id, user_id
         FROM messages
         WHERE chat_id = $1
     `
