@@ -58,25 +58,41 @@ export async function getMeController(req, res) {
 
 export async function updateUserController(req, res) {
     try {
-        const { username, password, avatar } = req.body;
+        const { username, avatar, currentPassword, newPassword } = req.body;
 
         const user = await updateUser({
             id: req.user.id,
-            username: username || null,
-            password: password || null,
-            avatar: avatar || null
+            username: username ?? null,
+            avatar: avatar ?? null,
+            currentPassword: currentPassword ?? null,
+            newPassword: newPassword ?? null
         });
 
         return res.json(user);
-    } catch (err){
-        if (err.code == "23505") {
-            return res.status(409).json({message: "Nome se usuário já existe"});
+
+    } catch (err) {
+
+        if (err.code === "23505") {
+            return res.status(409).json({ message: "Nome de usuário já existe" });
         }
 
-        console.error(err)
-        return res.status(500).json({message: "Erro ao atualziar o usuário"})
+        if (err.message === "Senha atual incorreta") {
+            return res.status(403).json({ message: err.message });
+        }
+
+        if (
+            err.message === "Senha atual é obrigatória" ||
+            err.message === "Nova senha inválida" ||
+            err.message === "Username inválido"
+        ) {
+            return res.status(400).json({ message: err.message });
+        }
+
+        console.error(err);
+        return res.status(500).json({ message: "Erro ao atualizar o usuário" });
     }
 }
+
 
 export async function getUserByIdController(req, res) {
   try {
