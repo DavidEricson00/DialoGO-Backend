@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import app from "./app.js";
 import { PORT } from "./config/env.js";
 import setupSockets from "./sockets.js";
+import { setIO } from "./socketInstance.js";
 
 const server = http.createServer(app);
 
@@ -12,6 +13,8 @@ const io = new Server(server, {
     methods: ["GET", "POST", "PATCH", "DELETE"],
   },
 });
+
+setIO(io);
 
 setupSockets(io);
 
