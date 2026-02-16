@@ -14,6 +14,7 @@ export async function getChatMessages(id) {
     if(!messages) throw new Error("Mensagens não encontradas");
 
     return messages.map(msg => ({
+        id: msg.id,
         content: msg.content,
         sent_at: msg.sent_at,
         chat_id: msg.chat_id,
@@ -41,6 +42,7 @@ export async function sendMessage({content, chatId, userId}) {
     })
 
     return {
+        id: message.id,
         content: message.content,
         sent_at: message.sent_at,
         chat_id: message.chat_id,
