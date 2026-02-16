@@ -7,6 +7,7 @@ import {
     findUserByUsername as findUserByUsernameRepo,
     findUserById as findUserByIdRepo,
     updateUser as updateUserRepo,
+    getUserPassword,
 }  from "../repository/user.repository.js"
 
 export async function createUser({username, password}) {
@@ -89,7 +90,13 @@ export async function getUserById(id) {
 }
 
 
-export async function updateUser({ id, username = null, password = null, avatar = null }) {
+export async function updateUser({
+    id,
+    username = null,
+    avatar = null,
+    currentPassword = null,
+    newPassword = null
+}) {
     if (!id) {
         throw new Error("ID do usuário é obrigatório");
     }
@@ -98,14 +105,31 @@ export async function updateUser({ id, username = null, password = null, avatar 
         throw new Error("Username inválido");
     }
 
-    if (password !== null && (password.length < 8 || password.length > 100)) {
-        throw new Error("Senha inválida");
-    }
-
     let passwordHash = null;
-    if (password !== null) {
-        const saltRounds = Number(BYCRYPT_SALT_ROUNDS || 10);
-        passwordHash = await bcrypt.hash(password, saltRounds);
+
+    if (newPassword !== null) {
+        if (!currentPassword) {
+            throw new Error("Senha atual é obrigatória");
+        }
+
+        if (newPassword.length < 8 || newPassword.length > 100) {
+            throw new Error("Nova senha inválida");
+        }
+
+        const currentPasswordHash = await getUserPassword(id);
+
+        if (!currentPasswordHash) {
+            throw new Error("Usuário não encontrado");
+        }
+
+        const isValid = await bcrypt.compare(currentPassword, currentPasswordHash);
+
+        if (!isValid) {
+            throw new Error("Senha atual incorreta");
+        }
+
+        const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
+        passwordHash = await bcrypt.hash(newPassword, saltRounds);
     }
 
     const user = await updateUserRepo(id, {
