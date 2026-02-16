@@ -1,6 +1,28 @@
 import { sendMessage } from "./services/messages.service.js";
+import { JWT_SECRET } from "./config/env.js";
 
 function setupSockets(io) {
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+
+    if (!token) {
+      return next(new Error("Token não informado"));
+    }
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+
+      socket.user = {
+        id: decoded.sub,
+        username: decoded.username
+      };
+
+      next();
+    } catch (err) {
+      return next(new Error("Token inválido"));
+    }
+  });
+
   io.on("connection", (socket) => {
     console.log("Novo usuário conectado:", socket.id);
 
@@ -18,12 +40,12 @@ function setupSockets(io) {
     })
 
 
-    socket.on("sendMessage", async ({content, chatId, userId}) => {
+    socket.on("sendMessage", async ({content, chatId}) => {
       try {
         const message = await sendMessage({
           content,
           chatId,
-          userId
+          userId: socket.user.id
         });
 
         const roomName = `chat:${chatId}`;
