@@ -23,6 +23,9 @@ export async function sendMessageController(req, res) {
             userId: req.user.id 
         });
 
+        const roomName = `chat:${chatId}`;
+        io.to(roomName).emit("newMessage", message)
+
         return res.status(201).json(message);
     } catch (err){
         const status = err.statusCode || 500;
