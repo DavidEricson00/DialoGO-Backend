@@ -1,5 +1,6 @@
 import { sendMessage } from "./services/messages.service.js";
 import { JWT_SECRET } from "./config/env.js";
+import jwt from "jsonwebtoken";
 
 function setupSockets(io) {
   io.use((socket, next) => {
