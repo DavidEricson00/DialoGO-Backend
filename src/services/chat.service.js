@@ -23,43 +23,61 @@ function error(message, statusCode) {
 
 
 export async function createChat({ name, description = null, password = null, ownerId }) {
-  if (!name || !ownerId) throw error("Dados inválidos", 400);
+  try {
 
-  if (name.length > 32 || description.length > 128 || password.length > 100) {
-        throw new Error("Dados inválidos");
+    if (!name || !ownerId) {
+      throw error("Dados inválidos", 400);
+    }
+
+    if (
+      name.length > 32 ||
+      (description && description.length > 128) ||
+      (password && password.length > 100)
+    ) {
+      throw error("Dados inválidos", 400);
+    }
+
+    let chat;
+
+    if (password) {
+      const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+
+      chat = await createChatRepo({
+        name,
+        description,
+        password: passwordHash,
+        ownerId
+      });
+    } else {
+      chat = await createChatRepo({
+        name,
+        description,
+        password: null,
+        ownerId
+      });
+    }
+
+    await joinChatRepo(ownerId, chat.id);
+
+    return {
+      id: chat.id,
+      name: chat.name,
+      description: chat.description,
+      owner_id: chat.owner_id,
+      created_at: chat.created_at
+    };
+
+  } catch (err) {
+
+    if (err.code === "23505") {
+      throw error("Já existe um chat com esse nome", 409);
+    }
+
+    throw err;
   }
-
-  let chat;
-
-  if (password) {
-    const saltRounds = Number(BYCRYPT_SALT_ROUNDS);
-    const passwordHash = await bcrypt.hash(password, saltRounds);
-
-    chat = await createChatRepo({
-      name,
-      description,
-      password: passwordHash,
-      ownerId
-    });
-  } else {
-    chat = await createChatRepo({
-      name,
-      description,
-      password: null,
-      ownerId
-    });
-  }
-
-  await joinChatRepo(ownerId, chat.id);
-
-  return {
-    id: chat.id,
-    name: chat.name,
-    description: chat.description,
-    owner_id: chat.owner_id,
-    created_at: chat.created_at
-  };
 }
+
 
 
 export async function getAvailableChats(
